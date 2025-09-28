@@ -26,14 +26,23 @@ namespace SimpleShop.Customers
         {
             string productInfo = "";
 
-            foreach(Product p in Cart)
+            if(Cart.Count == 0)
             {
-                productInfo = productInfo + p.Name;
-
+                productInfo = "Your shopping cart is empty.";
             }
 
-            return $"Name:{Name}, Password:{Password}, Cart:{productInfo}";
+            foreach(Product p in Cart)
+            {
+                productInfo += p.Name;
+            }
+
+            return $"Name: {Name}, Password: {Password}, Cart: {productInfo}";
         }
+
+        public bool VerifyPassword(string password)
+        {
+            return password == Password;
+        } 
 
     }
 }
