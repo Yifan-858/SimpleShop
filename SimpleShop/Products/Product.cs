@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SimpleShop.Products
 {
-    public abstract class Product
+    public class Product
     {
         public string Name{ get; private set; }
         public double Price { get; private set; }
@@ -16,5 +16,12 @@ namespace SimpleShop.Products
             Name = name;
             Price = price;
         }
+
+        public override string ToString()
+        {
+            return $"{Name,-6}    Price: {Price} kr";
+        }
+
+        //public void applydiscount(cutomer,,,level)
     }
 }

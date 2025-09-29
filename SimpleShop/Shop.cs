@@ -11,12 +11,12 @@ namespace SimpleShop
 {
     public class Shop
     {
-        public List<string> Inventory { get; private set; }
+        public List<Product> Inventory { get; private set; }
         public List<Customer> Customers { get; private set; }
 
         public Shop()
         {
-            Inventory = new List<string> { "Milk", "Honey", "Egg" };
+            Inventory = new List<Product> ();
             Customers = new List<Customer>
             {
                 new Customer("Knatte", "123"),
@@ -25,11 +25,16 @@ namespace SimpleShop
             };
         }
 
+        public void AddToInventory(Product p)
+        {
+            Inventory.Add(p);
+        }
+
         public void DisplayInventory()
         {
-            foreach (string product in Inventory)
+            foreach (Product product in Inventory)
             {
-                Console.WriteLine(product);
+                Console.WriteLine(product.ToString());
             }
         }
 
@@ -48,7 +53,7 @@ namespace SimpleShop
                 List<string> welcomeMenuTitle = ["                          _.-^-._    .--.\r\n                       .-'   _   '-. |__|\r\n                      /     |_|     \\|  |\r\n                     /               \\  |\r\n                    /|     _____     |\\ |\r\n                     |    |==|==|    |  |\r\n |---|---|---|---|---|    |--|--|    |  |\r\n |---|---|---|---|---|    |==|==|    |  |\r\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "          Welcome To Farmer Market", "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"];
                 List<string> welcomeOptions = ["Register", "Login", "Exit"];
                 Menu welcomeMenu = new Menu(welcomeOptions, welcomeMenuTitle);
-                welcomeMenu.DisplayMenu();
+                
                 int userChoice = welcomeMenu.ControlSelect();
 
                 switch (userChoice)
@@ -60,8 +65,7 @@ namespace SimpleShop
                         Customer? currentUser = Login();
                         if(currentUser != null)
                         {
-                            Console.WriteLine("Open shopping menu");
-                            Console.ReadKey();
+                            ProductMenu(currentUser);
                         }
                         break;
                     case 2:
@@ -152,6 +156,93 @@ namespace SimpleShop
             Console.WriteLine("Press any key to proceed.");
             Console.ReadKey();
             return null;
+        }
+
+        public void ProductMenu(Customer currentUser)
+        {
+            bool inProductMenu = true;
+
+            while (inProductMenu)
+            {
+                List<string> productMenuTitle = ["^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "       Fresh food from Farmer Market", "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",$"Dear {currentUser.Name}, what would like to buy today >> "];
+                List<string> productOptions = new List<string>();
+
+                foreach(Product p in Inventory)
+                {
+                    string pInfo = p.ToString();
+                    productOptions.Add(pInfo);
+                }
+
+                productOptions.Add("To Shopping Cart");
+                productOptions.Add("Logout");
+
+                Menu productMenu = new Menu(productOptions,productMenuTitle);
+                
+                int userChoice = productMenu.ControlSelect();
+
+                //To shopping cart
+                if(userChoice == productOptions.Count - 2)
+                {
+                    ShowCart(currentUser);
+                    Console.ReadKey();
+                    
+                }
+                else if (userChoice == productOptions.Count - 1)//logout
+                {
+                    inProductMenu = false;
+                }
+                else
+                {
+                    Product selectedItem = Inventory[userChoice];
+                    currentUser.Cart.Add(selectedItem);
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"{selectedItem.Name} has been added to your cart!");
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.ReadKey();  
+                }
+
+               
+            }
+
+        }
+
+        public void ShowCart(Customer currentUser)
+        {
+            Console.Clear();
+            double totalPrice = 0.0;
+            int milkAmount = 0;
+            int honeyAmount = 0;
+            int eggAmount = 0;
+
+            //Modify Cart so it shows the amount of each product
+            for(int i = 0; i < currentUser.Cart.Count; i++)
+            {
+                switch (currentUser.Cart[i].Name)
+                {
+                    case "Milk":
+                        milkAmount++;
+                        break;
+                    case "Honey":
+                        honeyAmount++;
+                        break;
+                    case "Egg":
+                        eggAmount++;
+                        break;
+                    default:
+                        Console.WriteLine("Product unknow. Make sure to add it in Inventory first.");
+                        break;
+                }
+            }
+
+            List<(Product product, int amount)> cartInfo = new List<(Product product, int amount)>();
+            //foreach (Product p in currentUser.Cart)
+            //{
+            //    cartInfo.Add(p,)
+            //}
+
+            Console.WriteLine($"Total to pay: {totalPrice}");
+             //Console.WriteLine($"{i+1}. {currentUser.Cart[i].Name} {currentUser.Cart[i].Price}");
+             //   totalPrice += currentUser.Cart[i].Price;
         }
 
     } 

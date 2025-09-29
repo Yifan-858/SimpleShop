@@ -33,7 +33,7 @@ namespace SimpleShop.Customers
 
             foreach(Product p in Cart)
             {
-                productInfo += p.Name;
+                productInfo += $"/{p.Name}";
             }
 
             return $"Name: {Name}, Password: {Password}, Cart: {productInfo}";
@@ -44,5 +44,6 @@ namespace SimpleShop.Customers
             return password == Password;
         } 
 
+        //ShowCartInfo productname,price,amount
     }
 }
