@@ -8,9 +8,9 @@ namespace SimpleShop
         {
             Shop farmerMarket = new Shop();
 
-            Product milk = new Product("Milk", 20);
-            Product honey = new Product("Honey", 120);
-            Product egg = new Product("Egg", 50);
+            Product milk = new Milk("Milk", 30);
+            Product honey = new Honey("Honey", 120);
+            Product egg = new Egg("Egg",50);
 
             farmerMarket.AddToInventory(milk);
             farmerMarket.AddToInventory(honey);

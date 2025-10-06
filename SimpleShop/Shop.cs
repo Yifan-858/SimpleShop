@@ -167,12 +167,14 @@ namespace SimpleShop
                 List<string> productMenuTitle = ["^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "       Fresh food from Farmer Market", "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",$"Dear {currentUser.Name}, what would like to buy today >> "];
                 List<string> productOptions = new List<string>();
 
+                //List out the available products
                 foreach(Product p in Inventory)
                 {
                     string pInfo = p.ToString();
                     productOptions.Add(pInfo);
                 }
 
+                //add option"Shopping cart" and "Logout" in the end of the menu
                 productOptions.Add("To Shopping Cart");
                 productOptions.Add("Logout");
 
@@ -185,7 +187,6 @@ namespace SimpleShop
                 {
                     ShowCart(currentUser);
                     Console.ReadKey();
-                    
                 }
                 else if (userChoice == productOptions.Count - 1)//logout
                 {
@@ -194,19 +195,17 @@ namespace SimpleShop
                 else
                 {
                     Product selectedItem = Inventory[userChoice];
-                    currentUser.Cart.Add(selectedItem);
+                    currentUser.Cart.Add(selectedItem);// add products in the cart honey egg egg honey milk
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"{selectedItem.Name} has been added to your cart!");
                     Console.ForegroundColor = ConsoleColor.Gray;
                     Console.ReadKey();  
-                }
-
-               
+                }   
             }
 
         }
 
-        public void ShowCart(Customer currentUser)
+        public void ShowCart(Customer currentUser, List<Product> inventory)
         {
             Console.Clear();
             double totalPrice = 0.0;
@@ -215,7 +214,7 @@ namespace SimpleShop
             int eggAmount = 0;
 
             //Modify Cart so it shows the amount of each product
-            for(int i = 0; i < currentUser.Cart.Count; i++)
+            for (int i = 0; i < currentUser.Cart.Count; i++)
             {
                 switch (currentUser.Cart[i].Name)
                 {
@@ -229,16 +228,17 @@ namespace SimpleShop
                         eggAmount++;
                         break;
                     default:
-                        Console.WriteLine("Product unknow. Make sure to add it in Inventory first.");
+                        Console.WriteLine("Invalid Product in cart.");
                         break;
                 }
+                
             }
 
             List<(Product product, int amount)> cartInfo = new List<(Product product, int amount)>();
-            //foreach (Product p in currentUser.Cart)
-            //{
-            //    cartInfo.Add(p,)
-            //}
+            foreach (Product p in currentUser.Cart)
+            {
+                cartInfo.Add(p,)
+            }
 
             Console.WriteLine($"Total to pay: {totalPrice}");
              //Console.WriteLine($"{i+1}. {currentUser.Cart[i].Name} {currentUser.Cart[i].Price}");
