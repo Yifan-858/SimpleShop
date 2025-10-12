@@ -147,10 +147,28 @@ namespace SimpleShop
                     Console.ReadKey();
                     return c;
                 }
+                else if(userName != c.Name && !c.VerifyPassword(password))
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.WriteLine("You seem to be a new customer. Do you want to register?");
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.WriteLine("Press any key to proceed.");
+                    Console.ReadKey();
+                    return null;
+                }
+                else if(userName == c.Name && !c.VerifyPassword(password))
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.WriteLine("The password is invalid. Please try again.");
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.WriteLine("Press any key to proceed.");
+                    Console.ReadKey();
+                    return null;
+                }
             }
 
             Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine($"Can not find user.");
+            Console.WriteLine("Invalid input");
             Console.WriteLine("Please try again.");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine("Press any key to proceed.");
@@ -176,6 +194,7 @@ namespace SimpleShop
 
                 //add option"Shopping cart" and "Logout" in the end of the menu
                 productOptions.Add("To Shopping Cart");
+                productOptions.Add("Check Out");
                 productOptions.Add("Logout");
 
                 Menu productMenu = new Menu(productOptions,productMenuTitle);
@@ -183,11 +202,15 @@ namespace SimpleShop
                 int userChoice = productMenu.ControlSelect();
 
                 //To shopping cart
-                if(userChoice == productOptions.Count - 2)
+                if(userChoice == productOptions.Count - 3)
                 {
                     ShowCart(currentUser);
                     Console.WriteLine("Press any key to go back.");
                     Console.ReadKey();
+                }
+                else if(userChoice == productOptions.Count - 2)//checout
+                {
+                    CheckOut(currentUser);
                 }
                 else if (userChoice == productOptions.Count - 1)//logout
                 {
@@ -198,6 +221,7 @@ namespace SimpleShop
                     Product selectedItem = Inventory[userChoice];
                     currentUser.Cart.Add(selectedItem);// add products in the cart honey egg egg honey milk rearrange!
                     Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine();
                     Console.WriteLine($"{selectedItem.Name} has been added to your cart!");
                     Console.ForegroundColor = ConsoleColor.Gray;
                     Console.WriteLine("Press any key to continue shopping.");
@@ -211,25 +235,56 @@ namespace SimpleShop
         {
             Console.Clear();
             Console.WriteLine($"=== {currentUser.Name}'s shopping cart ===");
+            Console.WriteLine();
             double totalPrice = 0.0;
 
             //regroup the in-cart products by name, each group object contains one key and one Product object
             var productGroupedByName = currentUser.Cart.GroupBy(product => product.Name);
-            //then rearrange them into an new object (Tuple in c#) of name:, count:, totalPrice:
-            List<(string Name, int Count, double TotalPrice)> reselectedProductInfo = productGroupedByName.Select(groupObject => ( Name: groupObject.Key, Count: groupObject.Count(), TotalPrice: groupObject.Sum(product => product.Price))).ToList();
+            //then rearrange them into an new object (Tuple in c#) of name:, count:, unitPrice:, totalPrice:
+            List<(string Name, int Count, double UnitPrice, double TotalPrice)> reselectedProductInfo = productGroupedByName.Select(groupObject => ( Name: groupObject.Key, Count: groupObject.Count(), UnitPrice: groupObject.First().Price, TotalPrice: groupObject.Sum(product => product.Price))).ToList();
 
             if(reselectedProductInfo.Count > 0)
             {
                 for (int i = 0; i < reselectedProductInfo.Count; i++)
                 {
-                    Console.WriteLine($"{i+1}. {reselectedProductInfo[i].Name} | Amount: {reselectedProductInfo[i].Count} | Price:{reselectedProductInfo[i].TotalPrice}");
+                    Console.WriteLine($"{i+1}. {reselectedProductInfo[i].Name} | Quantity: {reselectedProductInfo[i].Count} | Unit Price:{reselectedProductInfo[i].UnitPrice} | Total Price:{reselectedProductInfo[i].TotalPrice}");
                 }
+
+                Console.WriteLine();
+                double cartTotalPrice = currentUser.Cart.Sum(product => product.Price);
+                Console.WriteLine($"TotalPrice: {cartTotalPrice}");
             }
             else
             {
                 Console.WriteLine("Your shopping cart is empty.");
             }
 
+        }
+
+        public void CheckOut(Customer currentUser)
+        {
+            if (currentUser.Cart.Count > 0)
+            {
+                double payment = currentUser.Cart.Sum(product => product.Price);
+                currentUser.Cart.Clear();
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"Recieved payment: {payment}.");
+                Console.WriteLine("Thank you for ordering! ");
+                Console.WriteLine("Your package is being processed!");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.WriteLine("Press any key to continue shopping.");
+                Console.ReadKey();
+            }
+            else
+            {
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("Your shopping cart is empty. Please add more product.");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.WriteLine("Press any key to continue shopping.");
+                Console.ReadKey();
+            }
         }
 
     } 
