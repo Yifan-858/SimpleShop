@@ -186,6 +186,7 @@ namespace SimpleShop
                 if(userChoice == productOptions.Count - 2)
                 {
                     ShowCart(currentUser);
+                    Console.WriteLine("Press any key to go back.");
                     Console.ReadKey();
                 }
                 else if (userChoice == productOptions.Count - 1)//logout
@@ -195,54 +196,40 @@ namespace SimpleShop
                 else
                 {
                     Product selectedItem = Inventory[userChoice];
-                    currentUser.Cart.Add(selectedItem);// add products in the cart honey egg egg honey milk
+                    currentUser.Cart.Add(selectedItem);// add products in the cart honey egg egg honey milk rearrange!
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"{selectedItem.Name} has been added to your cart!");
                     Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.WriteLine("Press any key to continue shopping.");
                     Console.ReadKey();  
                 }   
             }
 
         }
 
-        public void ShowCart(Customer currentUser, List<Product> inventory)
+        public void ShowCart(Customer currentUser)
         {
             Console.Clear();
+            Console.WriteLine($"=== {currentUser.Name}'s shopping cart ===");
             double totalPrice = 0.0;
-            int milkAmount = 0;
-            int honeyAmount = 0;
-            int eggAmount = 0;
 
-            //Modify Cart so it shows the amount of each product
-            for (int i = 0; i < currentUser.Cart.Count; i++)
+            //regroup the in-cart products by name, each group object contains one key and one Product object
+            var productGroupedByName = currentUser.Cart.GroupBy(product => product.Name);
+            //then rearrange them into an new object (Tuple in c#) of name:, count:, totalPrice:
+            List<(string Name, int Count, double TotalPrice)> reselectedProductInfo = productGroupedByName.Select(groupObject => ( Name: groupObject.Key, Count: groupObject.Count(), TotalPrice: groupObject.Sum(product => product.Price))).ToList();
+
+            if(reselectedProductInfo.Count > 0)
             {
-                switch (currentUser.Cart[i].Name)
+                for (int i = 0; i < reselectedProductInfo.Count; i++)
                 {
-                    case "Milk":
-                        milkAmount++;
-                        break;
-                    case "Honey":
-                        honeyAmount++;
-                        break;
-                    case "Egg":
-                        eggAmount++;
-                        break;
-                    default:
-                        Console.WriteLine("Invalid Product in cart.");
-                        break;
+                    Console.WriteLine($"{i+1}. {reselectedProductInfo[i].Name} | Amount: {reselectedProductInfo[i].Count} | Price:{reselectedProductInfo[i].TotalPrice}");
                 }
-                
             }
-
-            List<(Product product, int amount)> cartInfo = new List<(Product product, int amount)>();
-            foreach (Product p in currentUser.Cart)
+            else
             {
-                cartInfo.Add(p,)
+                Console.WriteLine("Your shopping cart is empty.");
             }
 
-            Console.WriteLine($"Total to pay: {totalPrice}");
-             //Console.WriteLine($"{i+1}. {currentUser.Cart[i].Name} {currentUser.Cart[i].Price}");
-             //   totalPrice += currentUser.Cart[i].Price;
         }
 
     } 

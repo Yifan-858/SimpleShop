@@ -44,6 +44,6 @@ namespace SimpleShop.Customers
             return password == Password;
         } 
 
-        //ShowCartInfo productname,price,amount
+        
     }
 }

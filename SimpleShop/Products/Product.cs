@@ -22,8 +22,5 @@ namespace SimpleShop.Products
         {
             return $"{Name,-6}    Price: {Price} kr";
         }
-
-        public abstract void IncrementAmount();
-        //public void applydiscount(cutomer,,,level)
     }
 }
