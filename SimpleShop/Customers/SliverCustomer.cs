@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace SimpleShop.Customers
 {
-    class SliverCustomer
+    public class SilverCustomer : Customer
     {
+        public SilverCustomer(string name, string password) : base(name, password,0.1, "Sliver")
+        {
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,17 +13,25 @@ namespace SimpleShop
     public class Shop
     {
         public List<Product> Inventory { get; private set; }
-        public List<Customer> Customers { get; private set; }
+        public List<Customer> Customers { get; private set; } 
+
+        private double currencySelected = 1;
+        private string currencySign = "kr";
 
         public Shop()
         {
             Inventory = new List<Product> ();
-            Customers = new List<Customer>
-            {
-                new Customer("Knatte", "123"),
-                new Customer("Fnatte", "321"),
-                new Customer("Tjatte", "213")
-            };
+            Customers = CustomerManager.LoadCustomersFromFile();
+
+            if (!Customers.Exists(c => c.Name == "Knatte"))
+            Customers.Add(new GoldCustomer("Knatte", "123"));
+
+            if (!Customers.Exists(c => c.Name == "Fnatte"))
+            Customers.Add(new SilverCustomer("Fnatte", "321"));
+
+            if (!Customers.Exists(c => c.Name == "Tjatte"))
+            Customers.Add(new BronzeCustomer("Tjatte", "213"));
+  
         }
 
         public void AddToInventory(Product p)
@@ -104,11 +113,40 @@ namespace SimpleShop
                 }
             }
 
-            Customer newCustomer = new Customer(userName, password);
-            Customers.Add(newCustomer);
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"Welcome {userName}!");
-            Console.WriteLine("Your new account has been registered successfully!");
+            Random rdn = new Random();
+            int number = rdn.Next(0, 3);
+
+            Customer newCustomer = null;
+
+            switch (number)
+            {
+                case 0:
+                    newCustomer = new BronzeCustomer(userName, password);
+                    Customers.Add(newCustomer);
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"Registered successfully! Welcome Bronze customer {userName}!");
+                    break;
+                case 1:
+                    newCustomer = new SilverCustomer(userName, password);
+                    Customers.Add(newCustomer);
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"Registered successfully! Welcome Silver customer {userName}!");
+                    break;
+                case 2:
+                    newCustomer = new GoldCustomer(userName, password);
+                    Customers.Add(newCustomer);
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"Registered successfully! Welcome Gold customer {userName}!");
+                    break;
+                default:
+                    Console.WriteLine("Invalid value");
+                    break;
+            }
+
+            CustomerManager.SaveCustomerToFile(Customers);
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine("Press any key to proceed..");
             Console.ReadKey();
@@ -135,45 +173,46 @@ namespace SimpleShop
                     Console.ForegroundColor = ConsoleColor.Gray;
                 }
             }
+
+            Customer existCustomer = null;
           
             foreach(Customer c in Customers)
             {
-                if(userName == c.Name && c.VerifyPassword(password))
+                if(userName == c.Name)
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"Logged in! Welcome {c.Name}!");
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    Console.WriteLine("Press any key to proceed.");
-                    Console.ReadKey();
-                    return c;
-                }
-                else if(userName != c.Name && !c.VerifyPassword(password))
-                {
-                    Console.ForegroundColor = ConsoleColor.DarkRed;
-                    Console.WriteLine("You seem to be a new customer. Do you want to register?");
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    Console.WriteLine("Press any key to proceed.");
-                    Console.ReadKey();
-                    return null;
-                }
-                else if(userName == c.Name && !c.VerifyPassword(password))
-                {
-                    Console.ForegroundColor = ConsoleColor.DarkRed;
-                    Console.WriteLine("The password is invalid. Please try again.");
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    Console.WriteLine("Press any key to proceed.");
-                    Console.ReadKey();
-                    return null;
+                    existCustomer = c;
+                    break;
                 }
             }
 
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine("Invalid input");
-            Console.WriteLine("Please try again.");
+            if(existCustomer == null)
+            {
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("You seem to be a new customer. Do you want to register?");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.WriteLine("Press any key to proceed.");
+                Console.ReadKey();
+                return null;
+            }
+            else if(existCustomer != null && !existCustomer.VerifyPassword(password))
+            {
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("The password is invalid. Please try again.");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.WriteLine("Press any key to proceed.");
+                Console.ReadKey();
+                return null;
+            }
+
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"Logged in! Welcome {existCustomer.Level} Customer {existCustomer.Name}!");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine("Press any key to proceed.");
             Console.ReadKey();
-            return null;
+            return existCustomer;
         }
 
         public void ProductMenu(Customer currentUser)
@@ -182,17 +221,23 @@ namespace SimpleShop
 
             while (inProductMenu)
             {
-                List<string> productMenuTitle = ["^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "       Fresh food from Farmer Market", "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",$"Dear {currentUser.Name}, what would like to buy today >> "];
+                List<string> productMenuTitle = ["^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "       Fresh food from Farmer Market", "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",$"Dear {currentUser.Level} Customer {currentUser.Name}, what would like to buy today >> "];
                 List<string> productOptions = new List<string>();
 
                 //List out the available products
                 foreach(Product p in Inventory)
                 {
-                    string pInfo = p.ToString();
+                    double currencyPrice = p.Price * currencySelected;
+                    double discountPrice = currencyPrice * (1-currentUser.Discount);
+                    double discoutDisplay = currentUser.Discount * 100;
+                    string pInfo =$"{p.Name,-6}    Regular Price: {currencyPrice}{currencySign} --{discoutDisplay}% off--      Your Price: {discountPrice}{currencySign}";
                     productOptions.Add(pInfo);
                 }
 
                 //add option"Shopping cart" and "Logout" in the end of the menu
+                productOptions.Add("View price in sek");
+                productOptions.Add("View price in eur");
+                productOptions.Add("View price in rmb");
                 productOptions.Add("To Shopping Cart");
                 productOptions.Add("Check Out");
                 productOptions.Add("Logout");
@@ -201,8 +246,23 @@ namespace SimpleShop
                 
                 int userChoice = productMenu.ControlSelect();
 
-                //To shopping cart
-                if(userChoice == productOptions.Count - 3)
+                
+                if(userChoice == productOptions.Count - 6)//currency sek
+                {
+                    currencySelected = ApplyCurrency("sek");
+                    currencySign = AddCurrencySign("sek");
+                }
+                else if(userChoice == productOptions.Count - 5)//currency eur
+                {
+                    currencySelected = ApplyCurrency("eur");
+                    currencySign = AddCurrencySign("eur");
+                }
+                else if(userChoice == productOptions.Count - 4)//currency rmb
+                {
+                    currencySelected = ApplyCurrency("rmb");
+                    currencySign = AddCurrencySign("rmb");
+                }
+                else if(userChoice == productOptions.Count - 3)//To shopping cart
                 {
                     ShowCart(currentUser);
                     Console.WriteLine("Press any key to go back.");
@@ -237,22 +297,24 @@ namespace SimpleShop
             Console.WriteLine($"=== {currentUser.Name}'s shopping cart ===");
             Console.WriteLine();
             double totalPrice = 0.0;
+            double applyDiscount = 1 - currentUser.Discount;
+
 
             //regroup the in-cart products by name, each group object contains one key and one Product object
             var productGroupedByName = currentUser.Cart.GroupBy(product => product.Name);
             //then rearrange them into an new object (Tuple in c#) of name:, count:, unitPrice:, totalPrice:
-            List<(string Name, int Count, double UnitPrice, double TotalPrice)> reselectedProductInfo = productGroupedByName.Select(groupObject => ( Name: groupObject.Key, Count: groupObject.Count(), UnitPrice: groupObject.First().Price, TotalPrice: groupObject.Sum(product => product.Price))).ToList();
+            List<(string Name, int Count, double UnitPrice, double TotalPrice)> reselectedProductInfo = productGroupedByName.Select(groupObject => ( Name: groupObject.Key, Count: groupObject.Count(), UnitPrice: groupObject.First().Price*applyDiscount*currencySelected, TotalPrice: groupObject.Sum(product => product.Price)*applyDiscount*currencySelected)).ToList();
 
             if(reselectedProductInfo.Count > 0)
             {
                 for (int i = 0; i < reselectedProductInfo.Count; i++)
                 {
-                    Console.WriteLine($"{i+1}. {reselectedProductInfo[i].Name} | Quantity: {reselectedProductInfo[i].Count} | Unit Price:{reselectedProductInfo[i].UnitPrice} | Total Price:{reselectedProductInfo[i].TotalPrice}");
+                    Console.WriteLine($"{i+1}. {reselectedProductInfo[i].Name} | Quantity: {reselectedProductInfo[i].Count} | Unit Price:{reselectedProductInfo[i].UnitPrice}{currencySign} | Total Price:{reselectedProductInfo[i].TotalPrice}{currencySign}");
                 }
 
                 Console.WriteLine();
-                double cartTotalPrice = currentUser.Cart.Sum(product => product.Price);
-                Console.WriteLine($"TotalPrice: {cartTotalPrice}");
+                double cartTotalPrice = currentUser.Cart.Sum(product => product.Price)*applyDiscount*currencySelected;
+                Console.WriteLine($"TotalPrice: --{currentUser.Discount*100}% off-- {cartTotalPrice}{currencySign}");
             }
             else
             {
@@ -265,11 +327,11 @@ namespace SimpleShop
         {
             if (currentUser.Cart.Count > 0)
             {
-                double payment = currentUser.Cart.Sum(product => product.Price);
+                double payment = currentUser.Cart.Sum(product => product.Price)*(1 - currentUser.Discount)*currencySelected;
                 currentUser.Cart.Clear();
                 Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine($"Recieved payment: {payment}.");
+                Console.WriteLine($"Recieved payment: {payment}{currencySign}.");
                 Console.WriteLine("Thank you for ordering! ");
                 Console.WriteLine("Your package is being processed!");
                 Console.ForegroundColor = ConsoleColor.Gray;
@@ -286,6 +348,38 @@ namespace SimpleShop
                 Console.ReadKey();
             }
         }
+
+        private double ApplyCurrency(string currency)
+        {
+            switch (currency)
+            {
+                case "sek":
+                    return 1;
+                case "eur":
+                    return 0.9;
+                case "rmb":
+                    return 0.75;
+                default:
+                    return 1;
+            }
+        }
+
+        private string AddCurrencySign(string currency)
+        {
+            switch (currency)
+            {
+                case "sek":
+                    return "kr";
+                case "eur":
+                    return "eur";
+                case "rmb":
+                    return "¥";
+                default:
+                    return "kr";
+            }
+        }
+
+
 
     } 
 }

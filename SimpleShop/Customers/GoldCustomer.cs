@@ -8,10 +8,8 @@ namespace SimpleShop.Customers
 {
     public class GoldCustomer : Customer
     {
-        public string Level { get; private set; }
-        public GoldCustomer(string name, string password) : base(name, password)
+        public GoldCustomer(string name, string password) : base(name, password, 0.15, "Gold")
         {
-            Level = "Gold";
         }
     }
 }

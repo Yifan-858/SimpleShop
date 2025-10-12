@@ -7,18 +7,22 @@ using SimpleShop.Products;
 
 namespace SimpleShop.Customers
 {
-    public class Customer
+    public abstract class Customer
     {
         public string Name { get; private set; }
         private string Password { get; set; }
+        public double Discount { get; private set; } 
+        public string Level { get; private set; }
 
         private List<Product> cart;
         public List<Product> Cart { get { return cart; } }
 
-        public Customer(string name, string password)
+        public Customer(string name, string password, double discount, string level)
         {
             Name = name;
             Password = password;
+            Discount = discount;
+            Level = level;
             cart = new List<Product>();
         }
 
@@ -36,7 +40,7 @@ namespace SimpleShop.Customers
                 productInfo += $"/{p.Name}";
             }
 
-            return $"Name: {Name}, Password: {Password}, Cart: {productInfo}";
+            return $"Name: {Name}, Password: {Password}, Level: {Level}, Discount: {Discount}, Cart: {productInfo}";
         }
 
         public bool VerifyPassword(string password)
@@ -44,6 +48,9 @@ namespace SimpleShop.Customers
             return password == Password;
         } 
 
-        
+        public string GetPassword()
+        {
+            return Password;
+        }
     }
 }

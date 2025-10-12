@@ -20,7 +20,7 @@ namespace SimpleShop.Products
 
         public override string ToString()
         {
-            return $"{Name,-6}    Price: {Price} kr";
+            return $"{Name,-6}    Price: {Price}";
         }
     }
 }
