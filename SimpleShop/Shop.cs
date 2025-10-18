@@ -227,8 +227,8 @@ namespace SimpleShop
                 //List out the available products
                 foreach(Product p in Inventory)
                 {
-                    double currencyPrice = p.Price * currencySelected;
-                    double discountPrice = currencyPrice * (1-currentUser.Discount);
+                    double currencyPrice = Math.Round(p.Price * currencySelected, 1);
+                    double discountPrice = Math.Round(currencyPrice * (1-currentUser.Discount), 1);
                     double discoutDisplay = currentUser.Discount * 100;
                     string pInfo =$"{p.Name,-6}    Regular Price: {currencyPrice}{currencySign} --{discoutDisplay}% off--      Your Price: {discountPrice}{currencySign}";
                     productOptions.Add(pInfo);
@@ -302,8 +302,14 @@ namespace SimpleShop
 
             //regroup the in-cart products by name, each group object contains one key and one Product object
             var productGroupedByName = currentUser.Cart.GroupBy(product => product.Name);
+
             //then rearrange them into an new object (Tuple in c#) of name:, count:, unitPrice:, totalPrice:
-            List<(string Name, int Count, double UnitPrice, double TotalPrice)> reselectedProductInfo = productGroupedByName.Select(groupObject => ( Name: groupObject.Key, Count: groupObject.Count(), UnitPrice: groupObject.First().Price*applyDiscount*currencySelected, TotalPrice: groupObject.Sum(product => product.Price)*applyDiscount*currencySelected)).ToList();
+            List<(string Name, int Count, double UnitPrice, double TotalPrice)> reselectedProductInfo = productGroupedByName.Select(groupObject => ( 
+                Name: groupObject.Key, 
+                Count: groupObject.Count(), 
+                UnitPrice: Math.Round(groupObject.First().Price*applyDiscount*currencySelected, 1), 
+                TotalPrice: Math.Round(groupObject.Sum(product => product.Price)*applyDiscount*currencySelected , 1)
+               )).ToList();
 
             if(reselectedProductInfo.Count > 0)
             {
