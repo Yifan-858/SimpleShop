@@ -43,7 +43,7 @@ namespace SimpleShop
         {
             foreach (Product product in Inventory)
             {
-                Console.WriteLine(product.ToString());
+                Console.WriteLine(product);
             }
         }
 
@@ -51,7 +51,7 @@ namespace SimpleShop
         {
             foreach (Customer c in Customers)
             {
-                Console.WriteLine(c.ToString());
+                Console.WriteLine(c);
             }
         }
         public void WelcomeMenu()
@@ -67,9 +67,11 @@ namespace SimpleShop
 
                 switch (userChoice)
                 {
+                    //Register
                     case 0:
                         Register();
                         break;
+                    //Login
                     case 1:
                         Customer? currentUser = Login();
                         if(currentUser != null)
@@ -77,6 +79,7 @@ namespace SimpleShop
                             ProductMenu(currentUser);
                         }
                         break;
+                    //Exit
                     case 2:
                         Console.WriteLine();
                         Console.WriteLine("Welcome back again!");
@@ -118,6 +121,8 @@ namespace SimpleShop
 
             Customer newCustomer = null;
 
+
+            //Assign a customer level randomly
             switch (number)
             {
                 case 0:
@@ -174,16 +179,18 @@ namespace SimpleShop
                 }
             }
 
-            Customer existCustomer = null;
-          
-            foreach(Customer c in Customers)
-            {
-                if(userName == c.Name)
-                {
-                    existCustomer = c;
-                    break;
-                }
-            }
+            //refactor with LINQ
+            Customer existCustomer = Customers.FirstOrDefault(c => c.Name == userName);
+
+            //Customer existCustomer = null;
+            //foreach(Customer c in Customers)
+            //{
+            //    if(userName == c.Name)
+            //    {
+            //        existCustomer = c;
+            //        break;
+            //    }
+            //}
 
             if(existCustomer == null)
             {
@@ -234,7 +241,7 @@ namespace SimpleShop
                     productOptions.Add(pInfo);
                 }
 
-                //add option"Shopping cart" and "Logout" in the end of the menu
+                //add option "Shopping cart" and "Logout" in the end of the menu
                 productOptions.Add("View price in sek");
                 productOptions.Add("View price in eur");
                 productOptions.Add("View price in rmb");
@@ -246,7 +253,6 @@ namespace SimpleShop
                 
                 int userChoice = productMenu.ControlSelect();
 
-                
                 if(userChoice == productOptions.Count - 6)//currency sek
                 {
                     currencySelected = ApplyCurrency("sek");
@@ -304,12 +310,13 @@ namespace SimpleShop
             var productGroupedByName = currentUser.Cart.GroupBy(product => product.Name);
 
             //then rearrange them into an new object (Tuple in c#) of name:, count:, unitPrice:, totalPrice:
-            List<(string Name, int Count, double UnitPrice, double TotalPrice)> reselectedProductInfo = productGroupedByName.Select(groupObject => ( 
+            List<(string Name, int Count, double UnitPrice, double TotalPrice)> reselectedProductInfo = productGroupedByName
+                .Select(groupObject => ( 
                 Name: groupObject.Key, 
                 Count: groupObject.Count(), 
                 UnitPrice: Math.Round(groupObject.First().Price*applyDiscount*currencySelected, 1), 
                 TotalPrice: Math.Round(groupObject.Sum(product => product.Price)*applyDiscount*currencySelected , 1)
-               )).ToList();
+                )).ToList();
 
             if(reselectedProductInfo.Count > 0)
             {
