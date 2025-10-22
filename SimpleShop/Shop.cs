@@ -326,7 +326,7 @@ namespace SimpleShop
                 }
 
                 Console.WriteLine();
-                double cartTotalPrice = currentUser.Cart.Sum(product => product.Price)*applyDiscount*currencySelected;
+                double cartTotalPrice = Math.Round(currentUser.Cart.Sum(product => product.Price)*applyDiscount*currencySelected,1);
                 Console.WriteLine($"TotalPrice: --{currentUser.Discount*100}% off-- {cartTotalPrice}{currencySign}");
             }
             else
@@ -340,7 +340,7 @@ namespace SimpleShop
         {
             if (currentUser.Cart.Count > 0)
             {
-                double payment = currentUser.Cart.Sum(product => product.Price)*(1 - currentUser.Discount)*currencySelected;
+                double payment = Math.Round(currentUser.Cart.Sum(product => product.Price)*(1 - currentUser.Discount)*currencySelected,1);
                 currentUser.Cart.Clear();
                 Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Blue;
